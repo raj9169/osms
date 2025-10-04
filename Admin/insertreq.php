@@ -3,7 +3,7 @@ define('TITLE', 'Add New Requester');
 define('PAGE', 'requesters');
 include('includes/header.php'); 
 include('../dbConnection.php');
-session_start();
+//session_start();
  if(isset($_SESSION['is_adminlogin'])){
   $aEmail = $_SESSION['aEmail'];
  } else {

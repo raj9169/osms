@@ -1,6 +1,6 @@
 <?php
 include('../dbConnection.php');
-session_start();
+//session_start();
 if(!isset($_SESSION['is_adminlogin'])){
   if(isset($_REQUEST['aEmail'])){
     $aEmail = $_REQUEST['aEmail'];

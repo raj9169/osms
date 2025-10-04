@@ -1,5 +1,5 @@
 <?php
-session_start();
+//session_start();
 define('TITLE', 'Success');
 define('PAGE', 'success');
 include('includes/header.php'); 

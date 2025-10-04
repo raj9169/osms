@@ -10,8 +10,9 @@ $con=new mysqli($db_host,$db_user,$db_password,$db_name,$db_port);
 if($con->connect_error){
     die("Connection failed");
 }
-//else{
-  //  echo "Connection success";
-//}
-
+/*
+else{
+  echo "Connection success";
+}
+*/
 ?>

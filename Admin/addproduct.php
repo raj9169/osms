@@ -3,7 +3,7 @@ define('TITLE', 'Add New Product');
 define('PAGE', 'assets');
 include('includes/header.php'); 
 include('../dbConnection.php');
-session_start();
+//session_start();
  if(isset($_SESSION['is_adminlogin'])){
   $aEmail = $_SESSION['aEmail'];
  } else {
@@ -33,39 +33,49 @@ if(isset($_REQUEST['psubmit'])){
  }
  }
 ?>
-<div class="col-sm-6 mt-5  mx-3 jumbotron">
-  <h3 class="text-center">Add New Product</h3>
-  <form action="" method="POST">
-    <div class="form-group">
-      <label for="pname">Product Name</label>
-      <input type="text" class="form-control" id="pname" name="pname">
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white text-center rounded-top">
+          <h3>Add New Product</h3>
+        </div>
+        <div class="card-body">
+          <form action="" method="POST">
+            <div class="mb-3">
+              <label for="pname" class="form-label">Product Name</label>
+              <input type="text" class="form-control" id="pname" name="pname" placeholder="Enter product name">
+            </div>
+            <div class="mb-3">
+              <label for="pdop" class="form-label">Date of Purchase</label>
+              <input type="date" class="form-control" id="pdop" name="pdop">
+            </div>
+            <div class="mb-3">
+              <label for="pava" class="form-label">Available</label>
+              <input type="text" class="form-control" id="pava" name="pava" onkeypress="isInputNumber(event)" placeholder="Available quantity">
+            </div>
+            <div class="mb-3">
+              <label for="ptotal" class="form-label">Total</label>
+              <input type="text" class="form-control" id="ptotal" name="ptotal" onkeypress="isInputNumber(event)" placeholder="Total quantity">
+            </div>
+            <div class="mb-3">
+              <label for="poriginalcost" class="form-label">Original Cost Each</label>
+              <input type="text" class="form-control" id="poriginalcost" name="poriginalcost" onkeypress="isInputNumber(event)" placeholder="Original cost per item">
+            </div>
+            <div class="mb-3">
+              <label for="psellingcost" class="form-label">Selling Cost Each</label>
+              <input type="text" class="form-control" id="psellingcost" name="psellingcost" onkeypress="isInputNumber(event)" placeholder="Selling cost per item">
+            </div>
+            <div class="d-flex justify-content-center gap-2">
+              <button type="submit" class="btn btn-success px-4" id="psubmit" name="psubmit">Submit</button>
+              <a href="assets.php" class="btn btn-outline-secondary px-4">Close</a>
+            </div>
+            <?php if(isset($msg)) {echo $msg; } ?>
+          </form>
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      <label for="pdop">Date of Purchase</label>
-      <input type="date" class="form-control" id="pdop" name="pdop">
-    </div>
-    <div class="form-group">
-      <label for="pava">Available</label>
-      <input type="text" class="form-control" id="pava" name="pava" onkeypress="isInputNumber(event)">
-    </div>
-    <div class="form-group">
-      <label for="ptotal">Total</label>
-      <input type="text" class="form-control" id="ptotal" name="ptotal" onkeypress="isInputNumber(event)">
-    </div>
-    <div class="form-group">
-      <label for="poriginalcost">Original Cost Each</label>
-      <input type="text" class="form-control" id="poriginalcost" name="poriginalcost" onkeypress="isInputNumber(event)">
-    </div>
-    <div class="form-group">
-      <label for="psellingcost">Selling Cost Each</label>
-      <input type="text" class="form-control" id="psellingcost" name="psellingcost" onkeypress="isInputNumber(event)">
-    </div>
-    <div class="text-center">
-      <button type="submit" class="btn btn-danger" id="psubmit" name="psubmit">Submit</button>
-      <a href="assets.php" class="btn btn-secondary">Close</a>
-    </div>
-    <?php if(isset($msg)) {echo $msg; } ?>
-  </form>
+  </div>
 </div>
 <!-- Only Number for input fields -->
 <script>

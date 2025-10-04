@@ -3,119 +3,85 @@ define('TITLE', 'Work Order');
 define('PAGE', 'work');
 include('includes/header.php'); 
 include('../dbConnection.php');
-session_start();
- if(isset($_SESSION['is_adminlogin'])){
+// session_start();
+if(isset($_SESSION['is_adminlogin'])){
   $aEmail = $_SESSION['aEmail'];
- } else {
+} else {
   echo "<script> location.href='login.php'; </script>";
- }
+}
+
+// fetch record only if id is present
+$row = [];
+if(isset($_REQUEST['id'])){
+  $id = intval($_REQUEST['id']); // secure input
+  $sql = "SELECT * FROM assignwork WHERE request_id = $id";
+  $result = $con->query($sql);
+  if($result && $result->num_rows > 0){
+    $row = $result->fetch_assoc();
+  }
+}
 ?>
 
-<div class="col-sm-6 mt-5  mx-3">
- <h3 class="text-center">Assigned Work Details</h3>
- <?php
- if(isset($_REQUEST['view'])){
-  $sql = "SELECT * FROM assignwork WHERE request_id = {$_REQUEST['id']}";
- $result = $con->query($sql);
- $row = $result->fetch_assoc();
- }
- ?>
- <table class="table table-bordered">
-  <tbody>
-   <tr>
-    <td>Request ID</td>
-    <td>
-     <?php if(isset($row['request_id'])) {echo $row['request_id']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>Request Info</td>
-    <td>
-     <?php if(isset($row['request_info'])) {echo $row['request_info']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>Request Description</td>
-    <td>
-     <?php if(isset($row['request_desc'])) {echo $row['request_desc']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>Name</td>
-    <td>
-     <?php if(isset($row['requester_name'])) {echo $row['requester_name']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>Address Line 1</td>
-    <td>
-     <?php if(isset($row['requester_add1'])) {echo $row['requester_add1']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>Address Line 2</td>
-    <td>
-     <?php if(isset($row['requester_add2'])) {echo $row['requester_add2']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>City</td>
-    <td>
-     <?php if(isset($row['requester_city'])) {echo $row['requester_city']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>State</td>
-    <td>
-     <?php if(isset($row['requester_state'])) {echo $row['requester_state']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>Pin Code</td>
-    <td>
-     <?php if(isset($row['requester_zip'])) {echo $row['requester_zip']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>Email</td>
-    <td>
-     <?php if(isset($row['requester_email'])) {echo $row['requester_email']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>Mobile</td>
-    <td>
-     <?php if(isset($row['requester_mobile'])) {echo $row['requester_mobile']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>Assigned Date</td>
-    <td>
-     <?php if(isset($row['assign_date'])) {echo $row['assign_date']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>Technician Name</td>
-    <td>
-     <?php if(isset($row['assign_tech'])) {echo $row['assign_tech']; }?>
-    </td>
-   </tr>
-   <tr>
-    <td>Customer Sign</td>
-    <td></td>
-   </tr>
-   <tr>
-    <td>Technician Sign</td>
-    <td></td>
-   </tr>
-  </tbody>
- </table>
- <div class="text-center">
-  <form class='d-print-none d-inline mr-3'><input class='btn btn-danger' type='submit' value='Print' onClick='window.print()'></form>
-  <form class='d-print-none d-inline' action="work.php"><input class='btn btn-secondary' type='submit' value='Close'></form>
- </div>
+<style>
+/* Hide everything except print-area when printing */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-area, #print-area * {
+    visibility: visible;
+  }
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
+</style>
+
+<div class="col-sm-8 mt-5 mx-auto">
+  <div class="card shadow-lg rounded-3 border-0">
+    <div class="card-header bg-primary text-white text-center">
+      <h4><i class="fas fa-file-alt me-2"></i> Assigned Work Details</h4>
+    </div>
+    <div class="card-body" id="print-area">
+      <?php if(!empty($row)) { ?>
+      <table class="table table-striped table-bordered align-middle">
+        <tbody>
+          <tr><th>Request ID</th><td><?php echo $row['request_id']; ?></td></tr>
+          <tr><th>Request Info</th><td><?php echo $row['request_info']; ?></td></tr>
+          <tr><th>Description</th><td><?php echo $row['request_desc']; ?></td></tr>
+          <tr><th>Name</th><td><?php echo $row['request_name']; ?></td></tr>
+          <tr><th>Address</th>
+              <td><?php echo $row['request_add1']." ".$row['request_add2']; ?></td></tr>
+          <tr><th>City</th><td><?php echo $row['request_city']; ?></td></tr>
+          <tr><th>State</th><td><?php echo $row['request_state']; ?></td></tr>
+          <tr><th>Pin Code</th><td><?php echo $row['request_zip']; ?></td></tr>
+          <tr><th>Email</th><td><?php echo $row['request_email']; ?></td></tr>
+          <tr><th>Mobile</th><td><?php echo $row['request_mobile']; ?></td></tr>
+          <tr><th>Assigned Date</th><td><?php echo $row['request_date']; ?></td></tr>
+          <tr><th>Technician</th><td><?php echo $row['request_tech']; ?></td></tr>
+          <tr><th>Customer Sign</th><td style="height:60px;"></td></tr>
+          <tr><th>Technician Sign</th><td style="height:60px;"></td></tr>
+        </tbody>
+      </table>
+      <?php } else { ?>
+        <div class="alert alert-warning text-center">🚫 No assigned work found for this Request ID.</div>
+      <?php } ?>
+    </div>
+
+    <?php if(!empty($row)) { ?>
+    <div class="card-footer text-center d-print-none">
+      <button class="btn btn-danger me-3" onclick="window.print()">
+        <i class="fas fa-print me-1"></i> Print
+      </button>
+      <a href="work.php" class="btn btn-secondary">
+        <i class="fas fa-times me-1"></i> Close
+      </a>
+    </div>
+    <?php } ?>
+  </div>
 </div>
 
-<?php
-include('includes/footer.php'); 
-?>
+<?php include('includes/footer.php'); ?>

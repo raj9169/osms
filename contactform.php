@@ -23,8 +23,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
         $mail->isSMTP();
         $mail->Host       = 'in-v3.mailjet.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'aa358cc7d693e565cf8ed4b6639f48d3'; // Replace
-        $mail->Password   = 'bad4076378769a3192a02db1209166fb'; // Replace
+        $mail->Username   = 'aa358cc7d693e565cf8ed4b6639f48d3';
+        $mail->Password   = 'bad4076378769a3192a02db1209166fb';
         $mail->SMTPSecure = 'tls';
         $mail->Port       = 587;
 

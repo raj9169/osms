@@ -3,61 +3,84 @@ define('TITLE', 'Requests');
 define('PAGE', 'request');
 include('includes/header.php'); 
 include('../dbConnection.php');
-if(session_id()==''){
-session_start();
-}
- if(isset($_SESSION['is_adminlogin'])){
-  $aEmail = $_SESSION['aEmail'];
- } else {
-  echo "<script> location.href='login.php'; </script>";
- }
-?>
-<div class="col-sm-4 mb-5">
-  <!-- Main Content area start Middle -->
-  <?php 
- $sql = "SELECT request_id, request_info, request_desc, request_date FROM submitrequest";
- $result = $con->query($sql);
- if($result->num_rows > 0){
-  while($row = $result->fetch_assoc()){
-   echo '<div class="card mt-5 mx-5">';
-   echo '<div class="card-header">';
-   echo 'Request ID : '. $row['request_id'];
-   echo '</div>';
-   echo '<div class="card-body">';
-   echo '<h5 class="card-title">Request Info : ' . $row['request_info'] . '</h5>';
-   echo '<p class="card-text">' . $row['request_desc'] . '</p>';
-   echo '<p class="card-text">Request Date: ' . $row['request_date'] . '</p>';
-   echo '<div class="float-right">';
-   echo '<form action="" method="POST"> <input type="hidden" name="id" value='. $row["request_id"] .'><input type="submit" class="btn btn-danger mr-3" name="view" value="View"><input type="submit" class="btn btn-secondary" name="close" value="Close"></form>';
-   echo '</div>' ;
-   echo '</div>' ;
-   echo'</div>';
-  }
- } else {
-  echo '<div class="alert alert-info mt-5 col-sm-6" role="alert">
-  <h4 class="alert-heading">Well done!</h4>
-  <p>Aww yeah, you successfully assigned all Requests.</p>
-  <hr>
-  <h5 class="mb-0">No Pending Requests</h5>
-</div>';
- }
 
-// after assigning work we will delete data from submitrequesttable by pressing close button
-if(isset($_REQUEST['close'])){
-  $sql = "DELETE FROM submitrequest WHERE request_id = {$_REQUEST['id']}";
-  if($con->query($sql) === TRUE){
-    // echo "Record Deleted Successfully";
-    // below code will refresh the page after deleting the record
-    echo '<meta http-equiv="refresh" content= "0;URL=?closed" />';
+if(session_id() == '') {
+  session_start();
+}
+if(!isset($_SESSION['is_adminlogin'])){
+  echo "<script> location.href='login.php'; </script>";
+}
+?>
+
+<div class="col-sm-9 col-md-10 mt-5">
+  <h2 class="fw-bold mb-4 text-primary"><i class="fas fa-envelope-open-text me-2"></i>Pending Requests</h2>
+
+  <?php 
+  $sql = "SELECT * FROM submitrequest";
+  $result = $con->query($sql);
+  if($result->num_rows > 0){
+  ?>
+    <div class="table-responsive">
+      <table class="table table-hover shadow-sm border">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Info</th>
+            <th>Description</th>
+            <th>Date</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php while($row = $result->fetch_assoc()){ ?>
+            <tr>
+              <td>#<?php echo $row['request_id']; ?></td>
+              <td><?php echo $row['request_info']; ?></td>
+              <td><?php echo $row['request_desc']; ?></td>
+              <td><?php echo $row['request_date']; ?></td>
+              <td class="text-center">
+                <!-- Redirect to assignworkform.php -->
+                <form action="assignworkform.php" method="POST" class="d-inline">
+                  <input type="hidden" name="id" value="<?php echo $row['request_id']; ?>">
+                  <button type="submit" name="view" class="btn btn-sm btn-outline-success">
+                    <i class="fas fa-user-cog me-1"></i> Assign
+                  </button>
+                </form>
+
+                <!-- Close Request -->
+                <form action="" method="POST" class="d-inline">
+                  <input type="hidden" name="id" value="<?php echo $row['request_id']; ?>">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" name="close" value="Close">
+                    <i class="fas fa-times me-1"></i> Close
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </div>
+  <?php
+  } else {
+    echo '<div class="alert alert-info shadow-sm" role="alert">
+            <h5 class="fw-bold"><i class="fas fa-check-circle me-2"></i>No Pending Requests</h5>
+            <p>All requests have been assigned.</p>
+          </div>';
+  }
+
+  // Delete request when "Close" pressed
+  if(isset($_REQUEST['close'])){
+    $sql = "DELETE FROM submitrequest WHERE request_id = {$_REQUEST['id']}";
+    if($con->query($sql) === TRUE){
+      echo '<meta http-equiv="refresh" content="0;URL=?closed" />';
     } else {
-      echo "Unable to Delete Data";
+      echo "<div class='alert alert-danger mt-3'>Unable to Delete Data</div>";
     }
   }
- ?>
-</div> <!-- Main Content area End Middle -->
+  ?>
+</div>
 
 <?php 
-  include('assignworkform.php');
-  include('includes/footer.php'); 
-  $con->close();
+include('includes/footer.php'); 
+$con->close();
 ?>

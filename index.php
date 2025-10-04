@@ -10,6 +10,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  
   <style>
     body {
       font-family: 'Roboto', sans-serif;
@@ -21,7 +22,7 @@
     }
 
     .navbar-scrolled {
-      background-color: #0d6efd !important;
+      background-color: #11bcefff !important;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
@@ -84,7 +85,11 @@
   </style>
 </head>
 <body>
-
+<script>
+       window.onload = function() {
+         alert('Welcome to OSMS - Online Service Management System!');
+     }
+</script>
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-transparent">
   <div class="container">
@@ -171,11 +176,11 @@
       </div>
       <div class="col-md-4">
         <h5>Head Office</h5>
-        <p>OSMS Pvt Ltd<br>Boring Road, Patna<br>Bihar - 800013<br>Phone: 7488472585</p>
+        <p>Pilani, Jhunjhunu<br>Rajasthan - 333031<br>Phone: 7488472585</p>
         
         <hr>
         <h5>Branch Office</h5>
-        <p>Udyog Vihar, Gurgaon<br>Haryana - 122016<br>Phone: 7488472585</p>
+        <p>Jawahar Nagar, Hyderabad<br>Telangana - 500078<br>Phone: 7488472585</p>
       </div>
     </div>
   </div>
@@ -211,7 +216,215 @@
   });
 </script>
 
+ <!-- Chatbot -->
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<div id="chatbot" class="chatbot-container shadow">
+  <div class="chatbot-header bg-primary text-white p-2 d-flex justify-content-between align-items-center">
+    <span><i class="fas fa-robot me-2"></i>OSMS Chatbot</span>
+    <button class="btn-close btn-close-white" onclick="toggleChatbot()"></button>
+  </div>
+
+  <div id="chatbot-messages" class="chatbot-messages p-2"></div>
+
+  <!-- Quick Options -->
+  <div id="chatbot-options" class="p-2 text-center border-top">
+    <button class="btn btn-sm btn-success m-1" onclick="sendAction('service request')">🛠 Service Request</button>
+    <button class="btn btn-sm btn-info m-1" onclick="sendAction('status')">📋 Check Status</button>
+  </div>
+
+  <div class="chatbot-input d-flex">
+    <input id="chatbot-input" type="text" class="form-control" placeholder="Type your message..." 
+           onkeypress="if(event.key==='Enter'){sendMessage();}">
+    <button class="btn btn-primary ms-1" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<!-- Floating Button -->
+<button id="chatbot-toggle" class="btn btn-primary chatbot-toggle" onclick="toggleChatbot()">
+  <i class="fas fa-comments"></i>
+</button>
+
+<style>
+  /* Chatbot Styles */
+  .chatbot-container {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 300px;
+    height: 400px;
+    background: #fff;
+    border-radius: 10px;
+    display: none;
+    flex-direction: column;
+    z-index: 2000;
+  }
+  .chatbot-header {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+  .chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 0.9rem;
+  }
+  .chatbot-messages .msg {
+    margin: 5px 0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    max-width: 80%;
+    clear: both;
+  }
+  .msg-user {
+    background: #0d6efd;
+    color: white;
+    margin-left: auto;
+  }
+  .msg-bot {
+    background: #f1f1f1;
+    margin-right: auto;
+  }
+  .chatbot-input {
+    border-top: 1px solid #ccc;
+    padding: 5px;
+  }
+  .chatbot-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    z-index: 2000;
+  }
+</style>
+
+<script>
+  // Toggle chatbot window
+  function toggleChatbot() {
+    const bot = document.getElementById("chatbot");
+    bot.style.display = (bot.style.display === "flex") ? "none" : "flex";
+    if (bot.style.display === "flex") {
+      showWelcome();
+    }
+  }
+
+  // Show welcome message
+  function showWelcome() {
+    const container = document.getElementById("chatbot-messages");
+    container.innerHTML = "";
+    appendMessage("👋 Hi! I’m your OSMS assistant. Please choose an option below:", "bot");
+  }
+
+  // Handle quick action buttons (Service Request / Check Status)
+  function sendAction(action) {
+    const container = document.getElementById("chatbot-messages");
+    container.innerHTML = ""; // clear old messages
+    appendMessage("👉 " + action, "user");
+    sendToBackend(action, 1); // 1 = reset flow
+  }
+
+  // Handle text input
+  function sendTypedMessage() {
+    const input = document.getElementById("chatbot-input");
+    const message = input.value.trim();
+    if (!message) return;
+
+    if (!validateInput(message)) return;
+
+    appendMessage(message, "user");
+    input.value = "";
+    sendToBackend(message, 0);
+  }
+
+  // Validation rules
+  function validateInput(message) {
+  const lastBotMessage = getLastBotMessage();
+  const trimmed = message.trim();
+
+  if (lastBotMessage.toLowerCase().includes("full name")) {
+    if (!/^[a-zA-Z ]{2,}$/.test(trimmed)) {
+      appendMessage("⚠️ Please enter a valid name (letters only, at least 2 characters).", "bot");
+      return false;
+    }
+  }
+
+  if (lastBotMessage.toLowerCase().includes("email")) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmed)) {
+      appendMessage("⚠️ Please enter a valid email address.", "bot");
+      return false;
+    }
+  }
+
+  if (lastBotMessage.toLowerCase().includes("request id")) {
+    if (!/^\d+$/.test(trimmed)) {
+      appendMessage("⚠️ Request ID must be a number.", "bot");
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+  // Get last bot message
+  function getLastBotMessage() {
+    const msgs = document.querySelectorAll("#chatbot-messages .msg-bot");
+    if (msgs.length === 0) return "";
+    return msgs[msgs.length - 1].innerText;
+  }
+
+  // Send to backend
+  async function sendToBackend(message, isAction = 0) {
+    try {
+      const response = await fetch("chat.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "message=" + encodeURIComponent(message) + "&isAction=" + isAction
+      });
+
+      const data = await response.json();
+      if (data.reply) {
+        appendMessage(data.reply, "bot");
+      }
+    } catch (err) {
+      appendMessage("⚠️ Error contacting server.", "bot");
+    }
+  }
+
+  // Append message
+  function appendMessage(text, sender) {
+    const container = document.getElementById("chatbot-messages");
+    const msg = document.createElement("div");
+    msg.className = "msg " + (sender === "user" ? "msg-user" : "msg-bot");
+    msg.innerText = text;
+    container.appendChild(msg);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // Event listeners
+  document.getElementById("chatbot-input").addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
+      sendTypedMessage();
+    }
+  });
+
+  document.getElementById("serviceBtn").addEventListener("click", function () {
+    sendAction("service request");
+  });
+
+  document.getElementById("statusBtn").addEventListener("click", function () {
+    sendAction("status");
+  });
+</script>
+
+<script>
+  document.alert("Welcome to OSMS - Online Service Management System!");
+</script>
+
+
+
 </body>
 </html>
