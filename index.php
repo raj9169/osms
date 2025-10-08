@@ -172,7 +172,7 @@
     <h2 class="section-title text-center">Contact Us</h2>
     <div class="row">
       <div class="col-md-8">
-        <?php include('ContactForm.php'); ?>
+        <?php include('contactform.php'); ?>
       </div>
       <div class="col-md-4">
         <h5>Head Office</h5>
