@@ -2,9 +2,9 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require 'PHPMailer/Exception.php';
-require 'PHPMailer/PHPMailer.php';
-require 'PHPMailer/SMTP.php';
+require '/var/www/html/OSMS_PHP/PHPMailer/Exception.php';
+require '/var/www/html/OSMS_PHP/PHPMailer/PHPMailer.php';
+require '/var/www/html/OSMS_PHP/PHPMailer/SMTP.php';
 
 // Display errors for debugging (remove in production)
 ini_set('display_errors', 1);
