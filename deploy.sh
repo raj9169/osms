@@ -1,8 +1,51 @@
 #!/bin/bash
 
+# Function to get EC2 public IP
+get_ec2_ip() {
+    # Try multiple methods to get the public IP
+    local ip=""
+    
+    # Method 1: EC2 instance metadata
+    ip=$(curl -s --connect-timeout 2 http://169.254.169.254/latest/meta-data/public-ipv4)
+    
+    # Method 2: Check external service
+    if [ -z "$ip" ]; then
+        ip=$(curl -s --connect-timeout 2 http://checkip.amazonaws.com/)
+    fi
+    
+    # Method 3: Get from hostname
+    if [ -z "$ip" ]; then
+        ip=$(curl -s --connect-timeout 2 http://icanhazip.com/)
+    fi
+    
+    # Method 4: From network interface
+    if [ -z "$ip" ]; then
+        ip=$(ip addr show | grep -E 'inet.*global' | awk '{print $2}' | cut -d'/' -f1 | head -1)
+    fi
+    
+    echo "$ip"
+}
+
+# Get EC2 IP
+EC2_IP=$(get_ec2_ip)
+
+if [ -z "$EC2_IP" ] || [ "$EC2_IP" = "127.0.0.1" ]; then
+    EC2_IP="localhost"
+    echo "⚠️  Using localhost for testing - actual deployment will use real IP"
+else
+    echo "✅ EC2 Public IP: $EC2_IP"
+fi
+
 # Configuration
 WEB_DIR="/var/www/html"
 BACKUP_DIR="/var/www/backups"
+SITE_URL="http://$EC2_IP"
+
+echo "=========================================="
+echo "🚀 OSMS Application Deployment"
+echo "🌐 Target: $SITE_URL"
+echo "📁 Web Directory: $WEB_DIR"
+echo "=========================================="
 
 echo "Starting PHP Application Deployment..."
 
