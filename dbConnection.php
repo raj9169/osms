@@ -1,7 +1,7 @@
 <?php
 $db_host="localhost";
-$db_user="root";
-$db_password="";
+$db_user="osms_user";
+$db_password="secure";
 $db_name="osms_db";
 $db_port=3306;
 
