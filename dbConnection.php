@@ -1,4 +1,14 @@
 <?php
+$con = new mysqli("localhost", "osms_user", "secure", "osms_db", 3306);
+
+if ($con->connect_error) {
+    echo "Error: " . $con->connect_error;
+} else {
+    echo "Connected!";
+    $con->close();
+}
+?>
+<?php
 // Database configuration
 $db_host = "localhost";
 $db_user = "osms_user";
@@ -7,6 +17,8 @@ $db_name = "osms_db";
 $db_port = 3306;
 
 echo "Testing database connection...<br>";
+
+
 
 // Create connection
 $con = new mysqli($db_host, $db_user, $db_password, $db_name, $db_port);
