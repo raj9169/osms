@@ -85,11 +85,11 @@
   </style>
 </head>
 <body>
-<script>
+<!-- <script>
        window.onload = function() {
          alert('Welcome to OSMS - Online Service Management System!');
      }
-</script>
+</script> -->
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-transparent">
   <div class="container">
