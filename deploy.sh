@@ -47,12 +47,10 @@ echo "🌐 Target: $SITE_URL"
 echo "📁 Web Directory: $WEB_DIR"
 echo "=========================================="
 
-echo "Starting PHP Application Deployment..."
-
 # Create backup directory
 sudo mkdir -p $BACKUP_DIR
 
-# Create backup if directory exists and has content
+# Create backup if directory exists
 if [ -d "$WEB_DIR" ] && [ "$(ls -A $WEB_DIR 2>/dev/null)" ]; then
     echo "Creating backup..."
     sudo tar -czf $BACKUP_DIR/backup-$(date +%Y%m%d-%H%M%S).tar.gz $WEB_DIR/ 2>/dev/null || true
@@ -62,41 +60,77 @@ fi
 echo "Stopping Apache..."
 sudo systemctl stop httpd
 
-# Deploy new files (more careful approach)
+# Clean the web directory (remove old files to avoid conflicts)
+echo "Cleaning web directory..."
+sudo find $WEB_DIR -maxdepth 1 -name "*.php" -delete
+sudo find $WEB_DIR -maxdepth 1 -name "*.html" -delete
+sudo rm -rf $WEB_DIR/Admin $WEB_DIR/User $WEB_DIR/images $WEB_DIR/js $WEB_DIR/vendor $WEB_DIR/PHPMailer 2>/dev/null || true
+
+# Deploy new files
 echo "Deploying files..."
-sudo mkdir -p $WEB_DIR
+sudo cp -r * $WEB_DIR/ 2>/dev/null || true
 
-# Copy files excluding deployment scripts
-for item in *; do
-    if [ "$item" != "Jenkinsfile" ] && [ "$item" != "deploy.sh" ]; then
-        sudo cp -r "$item" $WEB_DIR/ 2>/dev/null || true
-    fi
-done
+# Remove deployment scripts from web directory
+sudo rm -f $WEB_DIR/Jenkinsfile $WEB_DIR/deploy.sh 2>/dev/null || true
 
-# Set permissions
+# Set proper ownership and permissions
 echo "Setting permissions..."
+
+# Set ownership to apache
 sudo chown -R apache:apache $WEB_DIR
+
+# Set directory permissions
 sudo find $WEB_DIR -type d -exec chmod 755 {} \;
+
+# Set file permissions
 sudo find $WEB_DIR -type f -exec chmod 644 {} \;
 
-# Create and set permissions for writable directories
-sudo mkdir -p $WEB_DIR/sessions $WEB_DIR/uploads
-sudo chmod 775 $WEB_DIR/sessions $WEB_DIR/uploads
+# Special permissions for specific directories
+sudo chmod 755 $WEB_DIR/Admin $WEB_DIR/User $WEB_DIR/images $WEB_DIR/js
+
+# Create sessions directory if it doesn't exist
+sudo mkdir -p $WEB_DIR/sessions
+sudo chown apache:apache $WEB_DIR/sessions
+sudo chmod 755 $WEB_DIR/sessions
+
+# Install Composer dependencies in web directory
+echo "Installing Composer dependencies..."
+cd $WEB_DIR
+if [ -f "composer.json" ]; then
+    sudo composer install --no-dev --optimize-autoloader --no-interaction
+    echo "✅ Composer dependencies installed"
+else
+    echo "⚠️ No composer.json found"
+fi
 
 # Start web server
 echo "Starting Apache..."
 sudo systemctl start httpd
 
-# Test deployment
+# Test the deployment
 echo "Testing deployment..."
-sleep 3
+sleep 5
 
-if curl -s http://localhost/index.php > /dev/null; then
-    echo "✅ Deployment successful!"
-else
-    echo "⚠️ Deployment completed but website test failed"
-    # Show Apache status for debugging
-    sudo systemctl status httpd --no-pager -l
-fi
+echo "Testing individual files and directories:"
+FILES_TO_TEST=(
+    "index.php"
+    "chat.php" 
+    "contactform.php"
+    "logout.php"
+    "Admin/"
+    "User/"
+)
 
-echo "🎉 Deployment process completed!"
+for item in "${FILES_TO_TEST[@]}"; do
+    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SITE_URL/$item")
+    if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "302" ] || [ "$HTTP_STATUS" = "301" ]; then
+        echo "✅ $item is accessible (HTTP $HTTP_STATUS)"
+    else
+        echo "❌ $item returned HTTP $HTTP_STATUS"
+    fi
+done
+
+echo "=========================================="
+echo "🎉 Deployment completed!"
+echo "🌐 Application URL: $SITE_URL"
+echo "=========================================="
