@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-    git 'Default Git'
+    git 'Default'
         }
     environment {
         // Auto-detect EC2 IP with fallbacks
