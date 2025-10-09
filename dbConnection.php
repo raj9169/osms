@@ -2,22 +2,30 @@
 // Database configuration
 $db_host = "localhost";
 $db_user = "osms_user";
-$db_password = "secure";  // You need to set a password
+$db_password = "secure";
 $db_name = "osms_db";
-$db_port = 3306;  // Try 3306 first (default port)
+$db_port = 3306;
+
+echo "Testing database connection...<br>";
 
 // Create connection
 $con = new mysqli($db_host, $db_user, $db_password, $db_name, $db_port);
 
-// Check connection with detailed error message
+// Check connection
 if ($con->connect_error) {
-    die("Database Connection Failed: " . $con->connect_error . 
-        " [Host: $db_host, Port: $db_port, User: $db_user]");
+    echo "❌ Connection failed: " . $con->connect_error . "<br>";
+    echo "Details: [Host: $db_host, Port: $db_port, User: $db_user]<br>";
+} else {
+    echo "✅ Database connected successfully!<br>";
+    
+    // Test query
+    $result = $con->query("SHOW TABLES");
+    if ($result) {
+        echo "✅ Can execute queries. Found " . $result->num_rows . " tables.<br>";
+    } else {
+        echo "❌ Cannot execute queries: " . $con->error . "<br>";
+    }
+    
+    $con->close();
 }
-
-// Set charset
-$con->set_charset("utf8mb4");
-
-// For debugging (remove in production)
-// echo "<!-- Database connected successfully -->";
 ?>
