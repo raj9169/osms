@@ -114,7 +114,7 @@
   <div class="container">
     <h1>Welcome to OSMS</h1>
     <p>Your satisfaction is our priority</p>
-    <a href="User/login.php" class="btn btn-success btn-lg me-2">Login</a>
+    <a href="./User/login.php" class="btn btn-success btn-lg me-2">Login</a>
     <a href="User/UserRegistration.php" class="btn btn-outline-light btn-lg">Signup</a>
   </div>
 </header>
