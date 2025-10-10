@@ -1,8 +1,8 @@
 pipeline {
     agent any
     tools {
-        git 'Default'
-    }
+    git 'Default'
+        }
     environment {
         // Auto-detect EC2 IP with fallbacks
         EC2_IP = sh(script: '''
@@ -28,24 +28,6 @@ pipeline {
                     echo "🌐 Deployment Target: ${EC2_IP}"
                     echo "🔗 Application URL: http://${EC2_IP}"
                 }
-            }
-        }
-        
-        stage('Install Composer') {
-            steps {
-                sh '''
-                    echo "📦 Installing Composer..."
-                    if ! command -v composer &> /dev/null; then
-                        echo "Installing Composer..."
-                        php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-                        php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-                        php -r "unlink('composer-setup.php');"
-                        echo "✅ Composer installed successfully"
-                    else
-                        echo "✅ Composer already installed"
-                    fi
-                    composer --version
-                '''
             }
         }
         
@@ -79,8 +61,6 @@ pipeline {
                     if [ -f "composer.json" ]; then
                         composer install --no-dev --optimize-autoloader --no-interaction
                         echo "✅ Composer dependencies installed"
-                    else
-                        echo "⚠️ No composer.json found, skipping Composer"
                     fi
                 '''
             }
@@ -142,6 +122,7 @@ pipeline {
                 """
             }
         }
+        
     }
     
     post {
