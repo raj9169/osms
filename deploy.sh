@@ -4,6 +4,25 @@
 # 🚀 OSMS Deployment Script for Ubuntu
 # ==========================================
 
+
+# Fix log file permissions
+LOG_FILE="/var/log/osms-deployment.log"
+sudo touch "$LOG_FILE"
+sudo chown jenkins:jenkins "$LOG_FILE" 2>/dev/null || true
+sudo chmod 666 "$LOG_FILE" 2>/dev/null || true
+
+# If still no permission, use tmp location
+if [ ! -w "$LOG_FILE" ]; then
+    LOG_FILE="/tmp/osms-deployment.log"
+fi
+
+# Logging function
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
+
+
+
 set -e  # Exit on any error
 
 # Configuration
