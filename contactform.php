@@ -6,9 +6,9 @@ use PHPMailer\PHPMailer\Exception;
 
 // Load PHPMailer from vendor directory
 require 'vendor/autoload.php';
-require '/var/www/html/OSMS_PHP/PHPMailer/Exception.php';
-require '/var/www/html/OSMS_PHP/PHPMailer/PHPMailer.php';
-require '/var/www/html/OSMS_PHP/PHPMailer/SMTP.php';
+require '/var/www/html/PHPMailer/Exception.php';
+require '/var/www/html/PHPMailer/PHPMailer.php';
+require '/var/www/html/PHPMailer/SMTP.php';
 
 $success_msg = '';
 $error_msg = '';
