@@ -1,7 +1,7 @@
 <?php
-define('TITLE','User Profile');
-define('PAGE','UserProfile');
-include('includes/header.php');
+if (!defined('TITLE')) define('TITLE','User Profile');
+if (!defined('PAGE')) define('PAGE','UserProfile');
+include_once('includes/header.php');
 include('../dbConnection.php');
 //session_start();
 
