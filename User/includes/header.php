@@ -1,7 +1,7 @@
 <?php
 define('TITLE','User Profile');
 define('PAGE','UserProfile');
-include('includes/header.php');
+include_once('includes/header.php');
 include('../dbConnection.php');
 
 // Check if user is logged in
