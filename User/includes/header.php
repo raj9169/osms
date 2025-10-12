@@ -1,6 +1,4 @@
 <?php
-define('TITLE','User Profile');
-define('PAGE','UserProfile');
 include_once('includes/header.php');
 include('../dbConnection.php');
 
