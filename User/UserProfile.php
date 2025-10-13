@@ -5,10 +5,10 @@ ini_set('display_errors', 1);
 // Only show errors in development, not production
 // ini_set('display_errors', 0); // Use this in production
 // error_reporting(E_ALL & ~E_NOTICE); // Use this in production
-
+session_start();
 if (!defined('TITLE')) define('TITLE', 'User Profile');
 if (!defined('PAGE')) define('PAGE', 'UserProfile');
-include_once('includes/header.php');
+include_once('../includes/header.php');
 include('../dbConnection.php');
 
 // Session security
