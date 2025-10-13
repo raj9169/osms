@@ -52,16 +52,7 @@ if (isset($_POST['nameupdate'])) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-  <title>User Dashboard</title>
-  <link href="../css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<nav class="navbar navbar-dark bg-dark">
-  <a class="navbar-brand ms-3" href="#">Dashboard</a>
-</nav>
+
 <div class="col-sm-10 my-5 px-3">
   <div class="card shadow-lg border-0 rounded-4">
     <div class="card-header bg-secondary text-white text-center">
