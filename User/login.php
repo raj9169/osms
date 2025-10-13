@@ -1,32 +1,63 @@
 <?php
 include('../dbConnection.php');
-session_start();
-if(!isset($_SESSION['is_login'])){
-  if(isset($_REQUEST['rEmail'])){
-    $rEmail = mysqli_real_escape_string($con, trim($_REQUEST['rEmail']));
-    $rPassword = mysqli_real_escape_string($con, trim($_REQUEST['rPassword']));
 
-    if($rEmail == ""){
-      $msg = '<div class="alert alert-danger mt-2">Please enter your Email</div>';
-    } else if($rPassword == ""){
-      $msg = '<div class="alert alert-danger mt-2">Please enter your Password</div>';
+// Session security
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+    session_regenerate_id(true); // Prevent session fixation
+}
+
+// Redirect if already logged in
+if (isset($_SESSION['is_login']) && $_SESSION['is_login'] === true) {
+    header('Location: UserProfile.php');
+    exit();
+}
+
+$msg = '';
+
+if (isset($_REQUEST['rEmail'])) {
+    $rEmail = trim($_REQUEST['rEmail']);
+    $rPassword = $_REQUEST['rPassword']; // Don't trim passwords
+    
+    // Input validation
+    if (empty($rEmail)) {
+        $msg = '<div class="alert alert-danger mt-2">Please enter your Email</div>';
+    } else if (empty($rPassword)) {
+        $msg = '<div class="alert alert-danger mt-2">Please enter your Password</div>';
+    } else if (!filter_var($rEmail, FILTER_VALIDATE_EMAIL)) {
+        $msg = '<div class="alert alert-danger mt-2">Please enter a valid email address</div>';
     } else {
-      $sql = "SELECT r_email,r_password FROM userlogin WHERE r_email='".$rEmail."' AND r_password='".$rPassword."' LIMIT 1";
-      $result = $con->query($sql);
-      if($result->num_rows == 1){
-        $_SESSION['is_login'] = TRUE;
-        $_SESSION['rEmail'] = $rEmail;
-        echo "<script>location.href='UserProfile.php';</script>";
-      } else {
-        $msg = '<div class="alert alert-warning mt-2">Invalid Email or Password</div>';
-      }
+        // Use prepared statement to prevent SQL injection
+        $sql = "SELECT r_email, r_password FROM userlogin WHERE r_email = ? LIMIT 1";
+        $stmt = $con->prepare($sql);
+        $stmt->bind_param("s", $rEmail);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows == 1) {
+            $row = $result->fetch_assoc();
+            
+            // IMPORTANT: You should use password_verify() for hashed passwords
+            // Currently you're storing plain text passwords - this is UNSECURE!
+            
+            // For now, using plain text comparison (INSECURE - FIX THIS)
+            if ($rPassword === $row['r_password']) {
+                $_SESSION['is_login'] = true;
+                $_SESSION['rEmail'] = $rEmail;
+                $_SESSION['login_time'] = time();
+                
+                header('Location: UserProfile.php');
+                exit();
+            } else {
+                $msg = '<div class="alert alert-warning mt-2">Invalid Email or Password</div>';
+            }
+        } else {
+            $msg = '<div class="alert alert-warning mt-2">Invalid Email or Password</div>';
+        }
+        $stmt->close();
     }
-  }
-} else {
-  echo "<script>location.href='UserProfile.php';</script>";
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -80,7 +111,9 @@ if(!isset($_SESSION['is_login'])){
           <form action="" method="POST">
             <div class="mb-3">
               <label class="form-label"><i class="fas fa-user"></i> Email</label>
-              <input type="email" class="form-control" name="rEmail" placeholder="Enter your email" required>
+              <input type="email" class="form-control" name="rEmail" placeholder="Enter your email" 
+                     value="<?php echo isset($_POST['rEmail']) ? htmlspecialchars($_POST['rEmail']) : ''; ?>" 
+                     required>
             </div>
             <div class="mb-3">
               <label class="form-label"><i class="fas fa-lock"></i> Password</label>
