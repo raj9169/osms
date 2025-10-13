@@ -1,5 +1,5 @@
 <?php
-include_once('includes/header.php');
+//include_once('includes/header.php');
 include('../dbConnection.php');
 
 // Check if user is logged in
