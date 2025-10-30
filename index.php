@@ -420,9 +420,9 @@
   });
 </script>
 
-<!-- <script>
+<script>
   document.alert("Welcome to OSMS - Online Service Management System!");
-</script> -->
+</script>
 
 
 
