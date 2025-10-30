@@ -80,6 +80,12 @@ main() {
 
     # Install required packages
     log "📦 Installing required packages..."
+    while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 || \
+      sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || \
+      sudo fuser /var/cache/apt/archives/lock >/dev/null 2>&1; do
+    log "⏳ Waiting for apt lock to be released..."
+    sleep 5
+    done
     run_privileged apt update -y
     run_privileged apt install -y apache2 php php-mysql php-curl php-gd php-mbstring php-xml curl unzip
 
