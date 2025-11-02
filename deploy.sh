@@ -9,17 +9,27 @@ log() {
 }
 
 get_ec2_ip() {
+    # Try multiple methods to get EC2 IP
     local ip=""
-    ip=$(curl -s --connect-timeout 2 http://169.254.169.254/latest/meta-data/public-ipv4)
-    if [ -z "$ip" ]; then
-        ip=$(curl -s --connect-timeout 2 http://checkip.amazonaws.com/)
+    
+    # Method 1: EC2 metadata with token (for newer instances)
+    if ip=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null); then
+        if [[ ! "$ip" =~ "<?xml" ]]; then
+            echo "$ip"
+            return
+        fi
     fi
-    if [ -z "$ip" ]; then
-        ip=$(curl -s --connect-timeout 2 http://icanhazip.com/)
+    
+    # Method 2: Direct metadata access
+    if ip=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null); then
+        if [[ ! "$ip" =~ "<?xml" ]]; then
+            echo "$ip"
+            return
+        fi
     fi
-    if [ -z "$ip" ]; then
-        ip=$(hostname -I | awk '{print $1}')
-    fi
+    
+    # Method 3: External service
+    ip=$(curl -s http://checkip.amazonaws.com/ 2>/dev/null || echo "localhost")
     echo "$ip"
 }
 
