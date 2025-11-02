@@ -6,7 +6,8 @@ pipeline {
     environment {
         // Auto-detect EC2 IP with fallbacks
         EC2_IP = sh(script: '''
-            IP=$(curl -s --connect-timeout 3 http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || :)
+            TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+            IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/public-ipv4)
             if [ -z "$IP" ]; then
                 IP=$(curl -s --connect-timeout 3 http://checkip.amazonaws.com/ 2>/dev/null || :)
             fi
