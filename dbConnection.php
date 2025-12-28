@@ -1,17 +1,20 @@
 <?php
-// Database configuration
-$db_host = "localhost";
-$db_user = "root";
-$db_password = "123";
-$db_name = "osms_db";
-$db_port = 3306;
 
-// Create connection
-$con = new mysqli($db_host, $db_user, $db_password, $db_name, $db_port);
+$host = getenv('DB_HOST');
+$user = getenv('DB_USER');
+$pass = getenv('DB_PASS');
+$db   = getenv('DB_NAME');
 
-// Check connection
-if ($con->connect_error) {
-    echo "❌ Connection failed: " . $con->connect_error . "<br>";
-    echo "Details: [Host: $db_host, Port: $db_port, User: $db_user]<br>";
+if (!$host || !$user || !$pass || !$db) {
+    die("Environment variables not loaded. Check Secrets Manager or UserData.");
 }
+
+$con = new mysqli($host, $user, $pass, $db);
+
+if ($con->connect_error) {
+    die("Database Connection Failed");
+}
+
+$con->set_charset("utf8mb4");
+
 ?>
