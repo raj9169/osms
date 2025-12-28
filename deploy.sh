@@ -134,7 +134,7 @@ log "Fetching DB credentials from Secrets Manager..."
 sudo apt install -y jq awscli
 
 SECRET_NAME="prod/rds/app-db"
-REGION="ap-south-1"
+REGION="us-east-1"
 
 SECRET=$(aws secretsmanager get-secret-value \
   --secret-id $SECRET_NAME \
