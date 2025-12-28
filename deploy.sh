@@ -87,7 +87,6 @@ apt-get install -y \
 # Get host information
 EC2_HOST=$(get_ec2_host)
 log "Instance host/IP: $EC2_HOST"
-
 # Clone repository
 if clone_github_repo "$GITHUB_REPO" "$DEPLOY_DIR"; then
     SOURCE_DIR="$DEPLOY_DIR"
@@ -129,6 +128,34 @@ find /var/www/html -type f -exec chmod 644 {} \;
 mkdir -p /var/www/html/sessions
 chown www-data:www-data /var/www/html/sessions
 chmod 755 /var/www/html/sessions
+
+log "Fetching DB credentials from Secrets Manager..."
+
+sudo apt install -y jq awscli
+
+SECRET_NAME="prod/rds/app-db"
+REGION="ap-south-1"
+
+SECRET=$(aws secretsmanager get-secret-value \
+  --secret-id $SECRET_NAME \
+  --region $REGION \
+  --query SecretString \
+  --output text)
+
+DB_HOST=$(echo $SECRET | jq -r .host)
+DB_USER=$(echo $SECRET | jq -r .username)
+DB_PASS=$(echo $SECRET | jq -r .password)
+DB_NAME=$(echo $SECRET | jq -r .dbname)
+
+sudo tee /etc/profile.d/app_env.sh > /dev/null <<EOF
+export DB_HOST=$DB_HOST
+export DB_USER=$DB_USER
+export DB_PASS=$DB_PASS
+export DB_NAME=$DB_NAME
+EOF
+
+sudo chmod +x /etc/profile.d/app_env.sh
+
 
 # Start Apache
 log "Starting Apache service..."
