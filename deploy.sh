@@ -130,30 +130,54 @@ mkdir -p /var/www/html/sessions
 chown www-data:www-data /var/www/html/sessions
 chmod 755 /var/www/html/sessions
 
-log "Fetching DB credentials from Secrets Manager..."
 
+echo "===== Starting DB Secret Fetch Script ====="
+echo "Time: $(date)"
+
+echo "🔄 Installing dependencies..."
 sudo apt update -y
 sudo apt install -y jq unzip curl
 
+echo "⬇️ Downloading AWS CLI..."
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+echo "📦 Unzipping AWS CLI..."
 unzip -o awscliv2.zip
+
+echo "⚙️ Installing AWS CLI..."
 sudo ./aws/install
 
 sudo ln -sf /usr/local/bin/aws /usr/bin/aws
+aws --version
 
 SECRET_NAME="prod/rds/app-db"
 REGION="us-east-1"
 
+echo "🔐 Fetching secret: $SECRET_NAME from $REGION"
+
 SECRET=$(aws secretsmanager get-secret-value \
-  --secret-id $SECRET_NAME \
-  --region $REGION \
+  --secret-id "$SECRET_NAME" \
+  --region "$REGION" \
   --query SecretString \
   --output text)
 
-DB_HOST=$(echo $SECRET | jq -r .host)
-DB_USER=$(echo $SECRET | jq -r .username)
-DB_PASS=$(echo $SECRET | jq -r .password)
-DB_NAME=$(echo $SECRET | jq -r .dbname)
+if [ -z "$SECRET" ]; then
+  echo "❌ Failed to fetch secret!"
+  exit 1
+fi
+
+echo "✅ Secret fetched successfully"
+
+DB_HOST=$(echo "$SECRET" | jq -r .host)
+DB_USER=$(echo "$SECRET" | jq -r .username)
+DB_PASS=$(echo "$SECRET" | jq -r .password)
+DB_NAME=$(echo "$SECRET" | jq -r .dbname)
+
+echo "🧪 DB Host: $DB_HOST"
+echo "🧪 DB User: $DB_USER"
+echo "🧪 DB Name: $DB_NAME"
+
+echo "📁 Writing env variables to /etc/profile.d/app_env.sh"
 
 sudo tee /etc/profile.d/app_env.sh > /dev/null <<EOF
 export DB_HOST=$DB_HOST
@@ -163,6 +187,9 @@ export DB_NAME=$DB_NAME
 EOF
 
 sudo chmod +x /etc/profile.d/app_env.sh
+
+echo "🎯 DB credentials loaded successfully"
+echo "===== Script Finished at $(date) ====="
 
 
 # Start Apache
