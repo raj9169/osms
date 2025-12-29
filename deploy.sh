@@ -103,8 +103,12 @@ systemctl stop apache2 2>/dev/null || true
 
 # Prepare web directory
 log "Cleaning web directory..."
-rm -rf /var/www/html/* 2>/dev/null || true
-
+if [ -d "$SOURCE_DIR" ] && [ "$(ls -A "$SOURCE_DIR")" ]; then
+    rm -rf /var/www/html/*
+    cp -r "$SOURCE_DIR"/* /var/www/html/
+else
+    log "❌ Git repo empty – skipping delete to avoid blank server"
+fi  
 # Copy application files
 log "Copying application files from $SOURCE_DIR..."
 if [ -d "$SOURCE_DIR" ] && [ "$(ls -A $SOURCE_DIR 2>/dev/null)" ]; then
@@ -132,28 +136,11 @@ chmod 755 /var/www/html/sessions
 
 
 echo "===== Starting DB Secret Fetch Script ====="
-echo "Time: $(date)"
 
-echo "🔄 Installing dependencies..."
-sudo apt update -y
-sudo apt install -y jq unzip curl
-
-echo "⬇️ Downloading AWS CLI..."
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-
-echo "📦 Unzipping AWS CLI..."
-unzip -o awscliv2.zip
-
-echo "⚙️ Installing AWS CLI..."
-sudo ./aws/install
-
-sudo ln -sf /usr/local/bin/aws /usr/bin/aws
-aws --version
+log "🔐 Fetching DB credentials from Secrets Manager"
 
 SECRET_NAME="prod/rds/app-dbase"
 REGION="us-east-1"
-
-echo "🔐 Fetching secret: $SECRET_NAME from $REGION"
 
 SECRET=$(aws secretsmanager get-secret-value \
   --secret-id "$SECRET_NAME" \
@@ -161,44 +148,25 @@ SECRET=$(aws secretsmanager get-secret-value \
   --query SecretString \
   --output text)
 
-if [ -z "$SECRET" ]; then
-  echo "❌ Failed to fetch secret!"
-  exit 1
-fi
-
-echo "✅ Secret fetched successfully"
-
 DB_HOST=$(echo "$SECRET" | jq -r .host)
 DB_USER=$(echo "$SECRET" | jq -r .username)
 DB_PASS=$(echo "$SECRET" | jq -r .password)
 DB_NAME=$(echo "$SECRET" | jq -r .dbname)
 
-echo "🧪 DB Host: $DB_HOST"
-echo "🧪 DB User: $DB_USER"
-echo "🧪 DB Name: $DB_NAME"
+log "🧪 DB_HOST=$DB_HOST"
+log "🧪 DB_NAME=$DB_NAME"
 
-log "📁 Writing DB credentials to Apache systemd EnvironmentFile"
+log "📁 Injecting DB credentials into Apache envvars"
 
-sudo mkdir -p /etc/apache2/envvars.d
+sudo sed -i '/DB_HOST=/d;/DB_USER=/d;/DB_PASS=/d;/DB_NAME=/d' /etc/apache2/envvars
 
-sudo tee /etc/apache2/envvars.d/db_env.conf > /dev/null <<EOF
-DB_HOST=$DB_HOST
-DB_USER=$DB_USER
-DB_PASS=$DB_PASS
-DB_NAME=$DB_NAME
+sudo tee -a /etc/apache2/envvars > /dev/null <<EOF
+export DB_HOST=$DB_HOST
+export DB_USER=$DB_USER
+export DB_PASS=$DB_PASS
+export DB_NAME=$DB_NAME
 EOF
 
-log "🔧 Attaching EnvironmentFile to Apache systemd service"
-
-sudo systemctl edit apache2 <<EOF
-[Service]
-EnvironmentFile=/etc/apache2/envvars.d/db_env.conf
-EOF
-
-log "🔁 Reloading systemd and restarting Apache environment"
-
-sudo systemctl daemon-reexec
-sudo systemctl daemon-reload
 sudo systemctl restart apache2
 
 echo "🎯 DB credentials loaded successfully"
