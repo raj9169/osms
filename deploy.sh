@@ -68,6 +68,24 @@ clone_github_repo() {
     fi
 }
 
+echo "🔄 Installing dependencies..."
+sudo apt update -y
+sudo apt install -y jq unzip curl
+
+echo "⬇️ Downloading AWS CLI..."
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+echo "📦 Unzipping AWS CLI..."
+unzip -o awscliv2.zip
+
+echo "⚙️ Installing AWS CLI..."
+sudo ./aws/install
+
+sudo ln -sf /usr/local/bin/aws /usr/bin/aws
+aws --version
+
+
+
 # Main deployment
 log "🚀 Beginning deployment process"
 
