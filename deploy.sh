@@ -74,7 +74,8 @@ log "🚀 Beginning deployment process"
 # Update and install packages
 log "Updating package lists..."
 apt-get update -y
-
+log "Installing apt install mysql-client-core-8.0"
+apt install mysql-client-core-8.0
 log "Installing required packages..."
 apt-get install -y \
     apache2 \
