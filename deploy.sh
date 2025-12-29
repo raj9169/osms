@@ -131,7 +131,14 @@ chmod 755 /var/www/html/sessions
 
 log "Fetching DB credentials from Secrets Manager..."
 
-sudo apt install -y jq awscli
+sudo apt update -y
+sudo apt install -y jq unzip curl
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip -o awscliv2.zip
+sudo ./aws/install
+
+sudo ln -sf /usr/local/bin/aws /usr/bin/aws
 
 SECRET_NAME="prod/rds/app-db"
 REGION="us-east-1"
