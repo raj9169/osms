@@ -150,7 +150,7 @@ sudo ./aws/install
 sudo ln -sf /usr/local/bin/aws /usr/bin/aws
 aws --version
 
-SECRET_NAME="prod/rds/app-db"
+SECRET_NAME="prod/rds/app-dbase"
 REGION="us-east-1"
 
 echo "🔐 Fetching secret: $SECRET_NAME from $REGION"
@@ -177,16 +177,29 @@ echo "🧪 DB Host: $DB_HOST"
 echo "🧪 DB User: $DB_USER"
 echo "🧪 DB Name: $DB_NAME"
 
-echo "📁 Writing env variables to /etc/profile.d/app_env.sh"
+log "📁 Writing DB credentials to Apache systemd EnvironmentFile"
 
-sudo tee /etc/profile.d/app_env.sh > /dev/null <<EOF
-export DB_HOST=$DB_HOST
-export DB_USER=$DB_USER
-export DB_PASS=$DB_PASS
-export DB_NAME=$DB_NAME
+sudo mkdir -p /etc/apache2/envvars.d
+
+sudo tee /etc/apache2/envvars.d/db_env.conf > /dev/null <<EOF
+DB_HOST=$DB_HOST
+DB_USER=$DB_USER
+DB_PASS=$DB_PASS
+DB_NAME=$DB_NAME
 EOF
 
-sudo chmod +x /etc/profile.d/app_env.sh
+log "🔧 Attaching EnvironmentFile to Apache systemd service"
+
+sudo systemctl edit apache2 <<EOF
+[Service]
+EnvironmentFile=/etc/apache2/envvars.d/db_env.conf
+EOF
+
+log "🔁 Reloading systemd and restarting Apache environment"
+
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl restart apache2
 
 echo "🎯 DB credentials loaded successfully"
 echo "===== Script Finished at $(date) ====="
